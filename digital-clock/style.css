@@ -1,0 +1,39 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    height: 100vh;
+    background-color: rgb(40, 40, 40);
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#parentDiv {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    background-color: rgb(158, 158, 157);
+    height: 200px;
+    width: 300px;
+    border-radius: 10px;
+}
+
+#banner {
+    margin-bottom: 15px;
+}
+
+#clock {
+    display: flex;
+    background-color: rgb(191, 135, 66);
+    height: 40px;
+    width: 140px;
+    border-radius: 10px;
+    justify-content: center;
+    align-items: center;
+}
