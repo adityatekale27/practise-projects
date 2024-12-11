@@ -1,87 +1,94 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const toDoInput = document.getElementById("todo-input");
-  const addTaskBtn = document.getElementById("add-task-btn");
-  const toDoList = document.getElementById("todo-list");
+const todoInput = document.getElementById("todo-input");
+const addBtn = document.getElementById("add-btn");
+const taskList = document.getElementById("tasks");
+const footerMsg = document.getElementById("footer-msg");
+const listContainer = document.querySelector(".todo-list");
 
-  // Load tasks from localStorage or initialize an empty array
-  let tasksArr = JSON.parse(localStorage.getItem("tasks")) || [];
+function saveTasks() {
+  const tasksArr = [];
 
-  // Render all tasks on page load
-  tasksArr.forEach((task) => renderTask(task));
-
-  // Add task button click handler
-  addTaskBtn.addEventListener("click", () => {
-    const taskText = toDoInput.value.trim();
-    if (taskText === "") return;
-
-    const newTask = {
-      id: Date.now(),
-      text: taskText,
-      completed: false,
-    };
-
-    tasksArr.push(newTask);
-    saveTasks();
-    renderTask(newTask);
-    toDoInput.value = "";
+  document.querySelectorAll("#tasks li").forEach((li) => {
+    tasksArr.push({
+      text: li.querySelector("span").textContent,
+      completed: li.querySelector("span").classList.contains("completed"),
+    });
   });
 
-  // Function to render a single task
-  function renderTask(task) {
-    const li = document.createElement("li");
-    li.setAttribute("data-id", task.id);
+  localStorage.setItem("tasks", JSON.stringify(tasksArr));
+}
 
-    if (task.completed) {
-      li.classList.add("completed");
+function loadTasks() {
+  const savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+  savedTasks.forEach((task) => {
+    const taskItem = createTaskItem(task.text, task.completed);
+    taskList.appendChild(taskItem);
+  });
+
+  if (savedTasks.length > 0) {
+    listContainer.classList.remove("hidden");
+  }
+}
+
+function createTaskItem(taskText, isCompleted = false) {
+  const li = document.createElement("li");
+  const span = document.createElement("span");
+  const deleteBtn = document.createElement("button");
+
+  span.textContent = taskText;
+  deleteBtn.textContent = "✖";
+  deleteBtn.classList.add("delete-btn");
+
+  if (isCompleted) {
+    span.classList.add("completed");
+  }
+
+  li.appendChild(span);
+  li.appendChild(deleteBtn);
+
+  li.addEventListener("click", () => {
+    span.classList.toggle("completed");
+    saveTasks();
+  });
+
+  deleteBtn.addEventListener("click", () => {
+    li.remove();
+    saveTasks();
+
+    if (!taskList.children.length) {
+      listContainer.classList.add("hidden");
     }
+  });
 
-    li.innerHTML = `
-    <span class="task-text">${task.text}</span>
-    <button class="delete-btn">Delete</button>
-    `;
+  return li;
+}
 
-    li.addEventListener("click", (e) => {
-      if (e.target.tagName === "BUTTON") return;
-      li.querySelector(".task-text").classList.toggle("completed");
-      toggleCompleteTask(task.id);
-      saveTasks();
-    });
+function addTasks() {
+  todoInput.focus();
+  const taskText = todoInput.value.trim();
 
-    li.querySelector(".delete-btn").addEventListener("click", () => deleteTask(task.id));
-
-    toDoList.appendChild(li);
+  if (!taskText) {
+    footerMsg.textContent = `Please enter the task!`;
+    return;
   }
 
-  // Function to save tasks to localStorage
-  function saveTasks() {
-    localStorage.setItem("tasks", JSON.stringify(tasksArr));
-  }
+  const taskItem = createTaskItem(taskText);
+  taskList.appendChild(taskItem);
+  listContainer.classList.remove("hidden");
 
-  // Function to toggle task completion
-  function toggleCompleteTask(taskId) {
-    tasksArr = tasksArr.map((task) => {
-      if (task.id === taskId) {
-        task.completed = !task.completed;
-      }
+  todoInput.value = "";
+  todoInput.focus();
+  footerMsg.textContent = "Manage your tasks effectively";
 
-      return task;
-    });
+  saveTasks();
+}
 
-    saveTasks();
-    refreshList();
-  }
+addBtn.addEventListener("click", addTasks);
 
-  // Function to delete a task
-  function deleteTask(taskId) {
-    tasksArr = tasksArr.filter((task) => task.id !== taskId);
-
-    saveTasks();
-    refreshList();
-  }
-
-  // Function to refresh the task list
-  function refreshList() {
-    toDoList.innerHTML = ""; // Clear the list
-    tasksArr.forEach((task) => renderTask(task)); // Re-render all tasks
+todoInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    addTasks();
   }
 });
+
+document.addEventListener("DOMContentLoaded", loadTasks);
